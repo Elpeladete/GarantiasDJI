@@ -1,0 +1,3021 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ServicePlus - Gestión de Tareas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    /* Variables de color */
+    :root {
+      --primary: #006600;
+      --primary-light: #008800;
+      --primary-dark: #004400;
+      --primary-transparent: rgba(0, 102, 0, 0.1);
+      --secondary: #f8f9fa;
+      --text-primary: #212529;
+      --text-secondary: #6c757d;
+      --text-light: #ffffff;
+      --border-color: #dee2e6;
+      --success: #28a745;
+      --warning: #ffc107;
+      --danger: #dc3545;
+      --info: #17a2b8;
+      --shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    /* Reset y estilos base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto', 'Open Sans', sans-serif;
+      color: var(--text-primary);
+      background-color: #f5f5f5;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Encabezado */
+    .header {
+      background-color: var(--primary);
+      color: var(--text-light);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px var(--shadow);
+      z-index: 100;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background-color: var(--primary-dark);
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+    }
+
+    /* Contenedor principal */
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Barra lateral */
+    .sidebar {
+      width: 250px;
+      background-color: var(--secondary);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-menu {
+      list-style: none;
+      padding: 0.5rem 0;
+    }
+
+    .sidebar-menu-item {
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .sidebar-menu-item:hover {
+      background-color: var(--primary-transparent);
+    }
+
+    .sidebar-menu-item.active {
+      background-color: var(--primary-transparent);
+      color: var(--primary);
+      font-weight: 500;
+      border-left: 3px solid var(--primary);
+    }
+
+    .sidebar-menu-item i {
+      font-size: 1.25rem;
+    }
+
+    /* Contenido principal */
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Barra de herramientas */
+    .toolbar {
+      padding: 1rem;
+      background-color: var(--secondary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .toolbar-title {
+      font-size: 1.25rem;
+      font-weight: 500;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* Lista de tareas */
+    .task-list-container {
+      padding: 1rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .task-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    .task-card {
+      background-color: white;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px var(--shadow);
+      padding: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border-left: 3px solid var(--primary);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .task-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px var(--shadow);
+    }
+
+    .task-card.completed {
+      border-left-color: var(--success);
+      opacity: 0.8;
+    }
+
+    .task-card.overdue {
+      border-left-color: var(--danger);
+    }
+
+    .task-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+
+    .task-card-title {
+      font-weight: 500;
+      font-size: 1rem;
+      margin-right: 0.5rem;
+      word-break: break-word;
+    }
+
+    .task-card-status {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      background-color: var(--primary-transparent);
+      color: var(--primary);
+      white-space: nowrap;
+    }
+
+    .task-card-status.completed {
+      background-color: rgba(40, 167, 69, 0.1);
+      color: var(--success);
+    }
+
+    .task-card-status.overdue {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: var(--danger);
+    }
+
+    .task-card-content {
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .task-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .task-card-date {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .task-card-attachments {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    /* Detalles de la tarea */
+    .task-details {
+      display: none;
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 50%;
+      height: 100%;
+      background-color: white;
+      box-shadow: -2px 0 5px var(--shadow);
+      z-index: 1000;
+      overflow-y: auto;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    .task-details-header {
+      background-color: var(--primary);
+      color: var(--text-light);
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .task-details-title {
+      font-size: 1.25rem;
+      font-weight: 500;
+    }
+
+    .task-details-close {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      cursor: pointer;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .task-details-content {
+      padding: 1.5rem;
+    }
+
+    .task-details-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .task-details-section-title {
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 0.75rem;
+      color: var(--primary);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+    }
+
+    .task-info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .task-info-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .task-info-item.full-width {
+      grid-column: span 2;
+    }
+
+    .info-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+      font-size: 1rem;
+    }
+
+    .notes-box {
+      background-color: var(--secondary);
+      border-radius: 4px;
+      padding: 1rem;
+      min-height: 100px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .custom-fields-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .custom-field-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .custom-field-item.full-width {
+      grid-column: span 2;
+    }
+
+    .custom-field-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 0.25rem;
+    }
+
+    .custom-field-value {
+      font-size: 1rem;
+    }
+
+    /* Botones y acciones */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      outline: none;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: var(--text-light);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background-color: var(--secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background-color: #e9ecef;
+    }
+
+    .btn-success {
+      background-color: var(--success);
+      color: var(--text-light);
+    }
+
+    .btn-success:hover {
+      background-color: #218838;
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+      color: var(--text-light);
+    }
+
+    .btn-danger:hover {
+      background-color: #c82333;
+    }
+
+    .btn-icon {
+      padding: 0.5rem;
+      border-radius: 50%;
+    }
+
+    .task-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+    }
+
+    /* Formularios */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      font-size: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 0.2rem var(--primary-transparent);
+    }
+
+    .form-control-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+    }
+
+    /* Overlay y loader */
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1001;
+      backdrop-filter: blur(2px);
+    }
+
+    .loader {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1002;
+    }
+
+    .loader-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid var(--primary-transparent);
+      border-top: 5px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Pestañas */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 1rem;
+    }
+
+    .tab {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .tab:hover {
+      color: var(--primary);
+    }
+
+    .tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Adjuntos */
+    .attachments-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .attachment-item {
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .attachment-preview {
+      height: 100px;
+      background-color: var(--secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .attachment-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .attachment-preview.video {
+      position: relative;
+    }
+
+    .attachment-preview.video::after {
+      content: "play_circle_outline";
+      font-family: 'Material Icons';
+      position: absolute;
+      font-size: 3rem;
+      color: white;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .attachment-info {
+      padding: 0.5rem;
+    }
+
+    .attachment-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .attachment-description {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Modales */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1100;
+    }
+
+    .modal-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(2px);
+    }
+
+    .modal-dialog {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      max-width: 600px;
+      background-color: white;
+      border-radius: 4px;
+      box-shadow: 0 4px 6px var(--shadow);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 500;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+    }
+
+    .modal-body {
+      padding: 1rem;
+      overflow-y: auto;
+    }
+
+    .modal-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+      .task-details {
+        width: 70%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 60px;
+      }
+
+      .sidebar-menu-item span {
+        display: none;
+      }
+
+      .task-details {
+        width: 100%;
+      }
+
+      .task-info-grid,
+      .custom-fields-container {
+        grid-template-columns: 1fr;
+      }
+
+      .task-info-item.full-width,
+      .custom-field-item.full-width {
+        grid-column: span 1;
+      }
+    }
+
+    /* Estilos para el sistema de permisos */
+    .permission-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .permission-table th,
+    .permission-table td {
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .permission-table th {
+      background-color: var(--secondary);
+      font-weight: 500;
+    }
+
+    .permission-level {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .permission-badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .permission-badge.admin {
+      background-color: var(--danger);
+      color: white;
+    }
+
+    .permission-badge.manager {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .permission-badge.editor {
+      background-color: var(--info);
+      color: white;
+    }
+
+    .permission-badge.viewer {
+      background-color: var(--secondary);
+      color: var(--text-primary);
+    }
+
+    /* Estilos para el historial de actividad */
+    .activity-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .activity-item {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      gap: 1rem;
+    }
+
+    .activity-icon {
+      color: var(--primary);
+      font-size: 1.25rem;
+    }
+
+    .activity-content {
+      flex: 1;
+    }
+
+    .activity-title {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .activity-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    /* Estilos para la subida de archivos */
+    .file-upload {
+      border: 2px dashed var(--border-color);
+      border-radius: 4px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 1rem;
+    }
+
+    .file-upload:hover {
+      border-color: var(--primary);
+      background-color: var(--primary-transparent);
+    }
+
+    .file-upload-icon {
+      font-size: 3rem;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    .file-upload-text {
+      font-size: 1rem;
+      color: var(--text-secondary);
+    }
+
+    .file-upload-input {
+      display: none;
+    }
+
+    .upload-preview-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .upload-preview-item {
+      position: relative;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .upload-preview-image {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+    }
+
+    .upload-preview-remove {
+      position: absolute;
+      top: 0.25rem;
+      right: 0.25rem;
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--danger);
+    }
+
+    .upload-preview-info {
+      padding: 0.5rem;
+    }
+
+    .upload-preview-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .upload-progress {
+      height: 4px;
+      background-color: var(--secondary);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 0.25rem;
+    }
+
+    .upload-progress-bar {
+      height: 100%;
+      background-color: var(--primary);
+      width: 0;
+      transition: width 0.3s;
+    }
+
+    /* Estilos para el panel de inicio de sesión */
+    .login-panel {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--secondary);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .login-box {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px var(--shadow);
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .login-box img {
+      width: 80px;
+      margin-bottom: 1rem;
+    }
+
+    .login-box h2 {
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+      color: var(--primary);
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 0.75rem;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .login-box button:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .login-box .error-message {
+      color: var(--danger);
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Panel de inicio de sesión -->
+  <div class="login-panel" id="loginPanel">
+    <div class="login-box">
+      <img src="https://i.ibb.co/mCzJTHyn/Service-Plus-Icon.png" alt="Logo">
+      <h2>Iniciar Sesión</h2>
+      <div id="loginErrorMessage" class="error-message">Usuario o contraseña incorrectos</div>
+      <input type="text" id="loginUsername" placeholder="Usuario" autocomplete="username">
+      <input type="password" id="loginPassword" placeholder="Contraseña" autocomplete="current-password">
+      <button onclick="login()">Entrar</button>
+    </div>
+  </div>
+
+  <!-- Contenido principal de la página -->
+  <div id="mainContent" style="display: none;">
+    <div class="header">
+      <h1>Bienvenido, <?= userInfo.name ?>!</h1>
+      <p>Rol: <?= userInfo.role ?></p>
+    </div>
+    <div class="content">
+      <p>Esta es la página principal de ServicePlus.</p>
+    </div>
+  </div>
+
+  <script>
+    // Variables globales
+    let currentTask = null;
+    let currentView = 'tasks';
+    let currentUserRole = null;
+    let uploadedImages = [];
+    let uploadedVideo = null;
+    
+    // Función para manejar el inicio de sesión
+    function login() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      const errorMessage = document.getElementById('loginErrorMessage');
+
+      if (!username || !password) {
+        errorMessage.textContent = "Por favor, complete todos los campos.";
+        errorMessage.style.display = "block";
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(isValid) {
+          if (isValid) {
+            // Ocultar el panel de inicio de sesión y mostrar el contenido principal
+            document.getElementById('loginPanel').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            loadTasks(); // Cargar las tareas después de iniciar sesión
+          } else {
+            errorMessage.textContent = "Usuario o contraseña incorrectos.";
+            errorMessage.style.display = "block";
+          }
+        })
+        .withFailureHandler(function(error) {
+          errorMessage.textContent = "Error al iniciar sesión. Intente nuevamente.";
+          errorMessage.style.display = "block";
+          console.error("Error en login:", error);
+        })
+        .validateLogin(username, password);
+    }
+
+    // Función para verificar si hay una sesión activa al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+      google.script.run
+        .withSuccessHandler(function(isLoggedIn) {
+          if (isLoggedIn) {
+            document.getElementById('loginPanel').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            loadTasks(); // Cargar las tareas si ya hay una sesión activa
+          } else {
+            document.getElementById('loginPanel').style.display = 'flex';
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.error("Error al verificar sesión activa:", error);
+          document.getElementById('loginPanel').style.display = 'flex';
+        })
+        .checkActiveSession();
+    });
+
+    // Función para cargar las tareas
+    function loadTasks() {
+      console.log("Cargando tareas...");
+
+      // Validar que los elementos del DOM existen antes de acceder a ellos
+      const overlay = document.getElementById('overlay');
+      const loader = document.getElementById('loader');
+      if (overlay && loader) {
+        overlay.style.display = 'block';
+        loader.style.display = 'block';
+      } else {
+        console.error("Elementos 'overlay' o 'loader' no encontrados en el DOM.");
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(user => {
+          if (!user) {
+            document.getElementById('welcomeMessage').textContent = "Error de autenticación";
+            overlay.style.display = 'none';
+            loader.style.display = 'none';
+            return;
+          }
+          
+          // Mostrar información del usuario
+          document.getElementById('welcomeMessage').textContent = `${user.firstName} ${user.lastName}`;
+          document.getElementById('userAvatar').textContent = getInitials(user.firstName, user.lastName);
+          currentUserRole = user.role || 'viewer'; // Por defecto, el rol más restrictivo
+          
+          // Registrar actividad
+          logActivity('login', 'Inicio de sesión', {userId: user.id});
+          
+          // Cargar tareas
+          google.script.run
+            .withSuccessHandler(renderTasks)
+            .withFailureHandler(error => {
+              console.error("Error al cargar tareas:", error);
+              document.getElementById('tasks').innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                  <i class="material-icons" style="font-size: 3rem; color: var(--danger);">error_outline</i>
+                  <p style="margin-top: 1rem;">Error al cargar las tareas. Verifique sus credenciales o contacte al administrador.</p>
+                </div>
+              `;
+              overlay.style.display = 'none';
+              loader.style.display = 'none';
+            })
+            .getAsanaTasks();
+        })
+        .withFailureHandler(() => {
+          document.getElementById('welcomeMessage').textContent = "Error de autenticación";
+          overlay.style.display = 'none';
+          loader.style.display = 'none';
+        })
+        .getPublicUserInfo();
+    }
+    
+    // Función para renderizar las tareas
+    function renderTasks(tasks) {
+      const tasksContainer = document.getElementById('tasks');
+      
+      if (!tasks || tasks.length === 0) {
+        tasksContainer.innerHTML = `
+          <div style="text-align: center; padding: 2rem;">
+            <i class="material-icons" style="font-size: 3rem; color: var(--text-secondary);">assignment</i>
+            <p style="margin-top: 1rem;">No hay tareas asignadas.</p>
+            <button class="btn btn-primary" style="margin-top: 1rem;" onclick="openCreateTaskModal()">
+              <i class="material-icons">add</i>
+              <span>Crear Nueva Tarea</span>
+            </button>
+          </div>
+        `;
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('loader').style.display = 'none';
+        return;
+      }
+      
+      tasksContainer.innerHTML = '';
+      
+      tasks.forEach(task => {
+        const isCompleted = task.completed;
+        const isOverdue = !isCompleted && task.dueOn && new Date(task.dueOn) < new Date();
+        
+        const taskCard = document.createElement('div');
+        taskCard.className = `task-card ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}`;
+        taskCard.dataset.taskId = task.gid;
+        
+        let statusText = 'Pendiente';
+        let statusClass = '';
+        
+        if (isCompleted) {
+          statusText = 'Completado';
+          statusClass = 'completed';
+        } else if (isOverdue) {
+          statusText = 'Vencido';
+          statusClass = 'overdue';
+        }
+        
+        // Formatear fecha para mostrar
+        const dueDate = task.dueOn ? new Date(task.dueOn).toLocaleDateString() : 'Sin fecha';
+        
+        // Contar adjuntos
+        const attachmentsCount = task.attachments ? task.attachments.length : 0;
+        
+        taskCard.innerHTML = `
+          <div class="task-card-header">
+            <h3 class="task-card-title">${escapeHtml(task.name)}</h3>
+            <span class="task-card-status ${statusClass}">${statusText}</span>
+          </div>
+          <div class="task-card-content">${escapeHtml(task.notes || 'Sin notas')}</div>
+          <div class="task-card-footer">
+            <div class="task-card-date">
+              <i class="material-icons" style="font-size: 16px;">event</i>
+              <span>${dueDate}</span>
+            </div>
+            <div class="task-card-attachments">
+              <i class="material-icons" style="font-size: 16px;">attach_file</i>
+              <span>${attachmentsCount}</span>
+            </div>
+          </div>
+        `;
+        
+        taskCard.addEventListener('click', () => showTaskDetails(task));
+        tasksContainer.appendChild(taskCard);
+      });
+      
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('loader').style.display = 'none';
+    }
+    
+    // Función para mostrar los detalles de la tarea
+    function showTaskDetails(task) {
+      try {
+        // Guardar la tarea actual para referencia
+        currentTask = task;
+        
+        // Actualizar los campos básicos
+        document.getElementById('taskId').textContent = task.gid;
+        document.getElementById('taskName').textContent = task.name || 'Sin nombre';
+        document.getElementById('taskNotes').textContent = task.notes || 'No hay notas disponibles';
+        document.getElementById('taskAssignee').textContent = task.assignee || 'Sin asignar';
+        
+        // Formatear fechas
+        const createdDate = task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A';
+        const modifiedDate = task.modifiedAt ? new Date(task.modifiedAt).toLocaleString() : 'N/A';
+        const dueDate = task.dueOn ? new Date(task.dueOn).toLocaleDateString() : 'N/A';
+        
+        document.getElementById('taskCreatedAt').textContent = createdDate;
+        document.getElementById('taskModifiedAt').textContent = modifiedDate;
+        document.getElementById('taskDueOn').textContent = dueDate;
+        
+        // Actualizar el estado visual
+        const taskStatus = document.getElementById('taskStatus');
+        const completeButton = document.getElementById('completeTaskButton');
+        
+        if (task.completed) {
+          taskStatus.textContent = 'Completado';
+          taskStatus.style.color = 'var(--success)';
+          completeButton.innerHTML = '<i class="material-icons">close</i><span>Marcar como Pendiente</span>';
+          completeButton.classList.remove('btn-success');
+          completeButton.classList.add('btn-secondary');
+        } else if (task.dueOn && new Date(task.dueOn) < new Date()) {
+          taskStatus.textContent = 'Vencido';
+          taskStatus.style.color = 'var(--danger)';
+          completeButton.innerHTML = '<i class="material-icons">check</i><span>Completar</span>';
+          completeButton.classList.remove('btn-secondary');
+          completeButton.classList.add('btn-success');
+        } else {
+          taskStatus.textContent = 'Pendiente';
+          taskStatus.style.color = 'var(--primary)';
+          completeButton.innerHTML = '<i class="material-icons">check</i><span>Completar</span>';
+          completeButton.classList.remove('btn-secondary');
+          completeButton.classList.add('btn-success');
+        }
+        
+        // Mostrar campos personalizados
+        const customFieldsContainer = document.getElementById('customFields');
+        customFieldsContainer.innerHTML = '';
+        
+        if (task.customFields && task.customFields.length > 0) {
+          task.customFields.forEach(field => {
+            const fieldDiv = document.createElement('div');
+            fieldDiv.className = field.type === 'text' ? 'custom-field-item full-width' : 'custom-field-item';
+            
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'custom-field-label';
+            labelDiv.textContent = field.name;
+            
+            const valueDiv = document.createElement('div');
+            valueDiv.className = 'custom-field-value';
+            valueDiv.textContent = field.value || 'N/A';
+            
+            fieldDiv.appendChild(labelDiv);
+            fieldDiv.appendChild(valueDiv);
+            customFieldsContainer.appendChild(fieldDiv);
+          });
+        } else {
+          customFieldsContainer.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">No hay campos personalizados para esta tarea.</p>';
+        }
+        
+        // Cargar adjuntos
+        loadTaskAttachments(task.gid);
+        
+        // Cargar historial de actividad
+        loadTaskActivity(task.gid);
+        
+        // Mostrar el panel de detalles
+        document.getElementById('taskDetails').style.display = 'block';
+        
+        // Registrar actividad
+        logActivity('view_task', 'Visualización de tarea', {taskId: task.gid, taskName: task.name});
+        
+        // Activar la pestaña de información por defecto
+        switchTaskTab('info');
+      } catch (error) {
+        console.error("Error al mostrar detalles de la tarea:", error);
+        alert("Error al cargar los detalles de la tarea: " + error.message);
+      }
+    }
+    
+    // Función para cargar los adjuntos de una tarea
+    function loadTaskAttachments(taskId) {
+      const attachmentsContainer = document.getElementById('attachmentsContainer');
+      attachmentsContainer.innerHTML = '<p>Cargando adjuntos...</p>';
+      
+      google.script.run
+        .withSuccessHandler(attachments => {
+          if (!attachments || attachments.length === 0) {
+            attachmentsContainer.innerHTML = '<p style="color: var (--text-secondary); font-style: italic;">No hay adjuntos para esta tarea.</p>';
+            return;
+          }
+          
+          attachmentsContainer.innerHTML = '';
+          
+          attachments.forEach(attachment => {
+            const attachmentItem = document.createElement('div');
+            attachmentItem.className = 'attachment-item';
+            
+            let previewHTML = '';
+            
+            if (attachment.type === 'image') {
+              previewHTML = `
+                <div class="attachment-preview">
+                  <img src="${attachment.url}" alt="${escapeHtml(attachment.name)}">
+                </div>
+              `;
+            } else if (attachment.type === 'video') {
+              previewHTML = `
+                <div class="attachment-preview video">
+                  <img src="${attachment.thumbnail || '/placeholder.svg?height=100&width=150'}" alt="${escapeHtml(attachment.name)}">
+                </div>
+              `;
+            } else {
+              previewHTML = `
+                <div class="attachment-preview">
+                  <i class="material-icons" style="font-size: 3rem; color: var(--text-secondary);">insert_drive_file</i>
+                </div>
+              `;
+            }
+            
+            attachmentItem.innerHTML = `
+              ${previewHTML}
+              <div class="attachment-info">
+                <div class="attachment-title">${escapeHtml(attachment.name)}</div>
+                <div class="attachment-description">${escapeHtml(attachment.description || '')}</div>
+              </div>
+            `;
+            
+            attachmentItem.addEventListener('click', () => openAttachment(attachment));
+            attachmentsContainer.appendChild(attachmentItem);
+          });
+        })
+        .withFailureHandler(error => {
+          console.error("Error al cargar adjuntos:", error);
+          attachmentsContainer.innerHTML = `<p style="color: var(--danger);">Error al cargar adjuntos: ${error}</p>`;
+        })
+        .getTaskAttachments(taskId);
+    }
+    
+    // Función para cargar el historial de actividad de una tarea
+    function loadTaskActivity(taskId) {
+      const activityList = document.getElementById('taskActivityList');
+      activityList.innerHTML = '<p>Cargando actividad...</p>';
+      
+      google.script.run
+        .withSuccessHandler(activities => {
+          if (!activities || activities.length === 0) {
+            activityList.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">No hay registros de actividad para esta tarea.</p>';
+            return;
+          }
+          
+          activityList.innerHTML = '';
+          
+          activities.forEach(activity => {
+            const activityItem = document.createElement('li');
+            activityItem.className = 'activity-item';
+            
+            let iconName = 'info';
+            
+            switch (activity.type) {
+              case 'create':
+                iconName = 'add_circle';
+                break;
+              case 'update':
+                iconName = 'edit';
+                break;
+              case 'complete':
+                iconName = 'check_circle';
+                break;
+              case 'attachment':
+                iconName = 'attach_file';
+                break;
+              case 'comment':
+                iconName = 'comment';
+                break;
+            }
+            
+            const date = new Date(activity.timestamp).toLocaleString();
+            
+            activityItem.innerHTML = `
+              <div class="activity-icon">
+                <i class="material-icons">${iconName}</i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">${escapeHtml(activity.description)}</div>
+                <div class="activity-meta">
+                  <span>${escapeHtml(activity.user)}</span>
+                  <span>${date}</span>
+                </div>
+              </div>
+            `;
+            
+            activityList.appendChild(activityItem);
+          });
+        })
+        .withFailureHandler(error => {
+          console.error("Error al cargar actividad:", error);
+          activityList.innerHTML = `<p style="color: var(--danger);">Error al cargar actividad: ${error}</p>`;
+        })
+        .getTaskActivity(taskId);
+    }
+    
+    // Función para alternar el estado de completado de una tarea
+    function toggleTaskCompletion() {
+      if (!currentTask || !currentTask.gid) {
+        alert('No hay una tarea seleccionada');
+        return;
+      }
+      
+      const taskId = currentTask.gid;
+      const newCompletedState = !currentTask.completed;
+      
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('loader').style.display = 'block';
+      
+      google.script.run
+        .withSuccessHandler(function() {
+          currentTask.completed = newCompletedState;
+          
+          // Actualizar la vista de detalles
+          showTaskDetails(currentTask);
+          
+          // Recargar la lista de tareas
+          loadTasks();
+          
+          // Registrar actividad
+          const actionType = newCompletedState ? 'complete_task' : 'reopen_task';
+          const actionDesc = newCompletedState ? 'Tarea completada' : 'Tarea reabierta';
+          logActivity(actionType, actionDesc, {taskId: taskId, taskName: currentTask.name});
+          
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+        })
+        .withFailureHandler(function(error) {
+          alert('Error al actualizar el estado de la tarea: ' + error);
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+        })
+        .updateTaskCompletionStatus(taskId, newCompletedState);
+    }
+    
+    // Función para editar una tarea
+    function editTask() {
+      if (!currentTask || !currentTask.gid) {
+        alert('No hay una tarea seleccionada para editar');
+        return;
+      }
+      
+      // Implementar la lógica de edición de tareas
+      alert('Funcionalidad de edición en desarrollo');
+    }
+    
+    // Función para eliminar una tarea
+    function deleteTask() {
+      if (!currentTask || !currentTask.gid) {
+        alert('No hay una tarea seleccionada para eliminar');
+        return;
+      }
+      
+      if (!confirm('¿Está seguro de que desea eliminar esta tarea? Esta acción no se puede deshacer.')) {
+        return;
+      }
+      
+      const taskId = currentTask.gid;
+      const taskName = currentTask.name;
+      
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('loader').style.display = 'block';
+      
+      google.script.run
+        .withSuccessHandler(function() {
+          // Cerrar el panel de detalles
+          closeTaskDetails();
+          
+          // Recargar la lista de tareas
+          loadTasks();
+          
+          // Registrar actividad
+          logActivity('delete_task', 'Tarea eliminada', {taskId: taskId, taskName: taskName});
+          
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+          
+          alert('Tarea eliminada correctamente');
+        })
+        .withFailureHandler(function(error) {
+          alert('Error al eliminar la tarea: ' + error);
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+        })
+        .deleteAsanaTask(taskId);
+    }
+    
+    // Función para cerrar los detalles de la tarea
+    function closeTaskDetails() {
+      document.getElementById('taskDetails').style.display = 'none';
+      currentTask = null;
+    }
+    
+    // Función para abrir el modal de creación de tareas
+    function openCreateTaskModal() {
+      // Limpiar el formulario
+      document.getElementById('newTaskName').value = '';
+      document.getElementById('newTaskNotes').value = '';
+      document.getElementById('newTaskDueDate').value = '';
+      document.getElementById('imagePreviewContainer').innerHTML = '';
+      document.getElementById('videoPreviewContainer').innerHTML = '';
+      uploadedImages = [];
+      uploadedVideo = null;
+      
+      // Cargar campos personalizados
+      loadCustomFieldsForm();
+      
+      // Cargar usuarios para asignación
+      loadUsersForAssignment();
+      
+      // Mostrar el modal
+      document.getElementById('createTaskModal').style.display = 'block';
+      
+      // Activar la primera pestaña
+      switchCreateTaskTab('basic');
+    }
+    
+    // Función para cerrar el modal de creación de tareas
+    function closeCreateTaskModal() {
+      document.getElementById('createTaskModal').style.display = 'none';
+    }
+    
+    // Función para cargar el formulario de campos personalizados
+    function loadCustomFieldsForm() {
+      const customFieldsForm = document.getElementById('customFieldsForm');
+      customFieldsForm.innerHTML = '<p>Cargando campos personalizados...</p>';
+      
+      google.script.run
+        .withSuccessHandler(customFields => {
+          if (!customFields || customFields.length === 0) {
+            customFieldsForm.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">No hay campos personalizados disponibles.</p>';
+            return;
+          }
+          
+          customFieldsForm.innerHTML = '';
+          
+          customFields.forEach(field => {
+            let fieldHTML = '';
+            
+            if (field.type === 'enum') {
+              // Campo de selección única
+              const options = field.options.map(opt => 
+                `<option value="${escapeHtml(opt.id)}">${escapeHtml(opt.name)}</option>`
+              ).join('');
+              
+              fieldHTML = `
+                <div class="form-group">
+                  <label class="form-label" for="customField_${field.id}">${escapeHtml(field.name)}</label>
+                  <select class="form-control" id="customField_${field.id}" data-field-id="${field.id}" data-field-type="${field.type}">
+                    <option value="">-- Seleccionar --</option>
+                    ${options}
+                  </select>
+                </div>
+              `;
+            } else if (field.type === 'multi_enum') {
+              // Campo de selección múltiple
+              const options = field.options.map(opt => 
+                `<option value="${escapeHtml(opt.id)}">${escapeHtml(opt.name)}</option>`
+              ).join('');
+              
+              fieldHTML = `
+                <div class="form-group">
+                  <label class="form-label" for="customField_${field.id}">${escapeHtml(field.name)}</label>
+                  <select class="form-control" id="customField_${field.id}" data-field-id="${field.id}" data-field-type="${field.type}" multiple>
+                    ${options}
+                  </select>
+                </div>
+              `;
+            } else if (field.type === 'date' || field.type === 'date_time') {
+              // Campo de fecha
+              fieldHTML = `
+                <div class="form-group">
+                  <label class="form-label" for="customField_${field.id}">${escapeHtml(field.name)}</label>
+                  <input type="date" class="form-control" id="customField_${field.id}" data-field-id="${field.id}" data-field-type="${field.type}">
+                </div>
+              `;
+            } else if (field.type === 'number') {
+              // Campo numérico
+              fieldHTML = `
+                <div class="form-group">
+                  <label class="form-label" for="customField_${field.id}">${escapeHtml(field.name)}</label>
+                  <input type="number" class="form-control" id="customField_${field.id}" data-field-id="${field.id}" data-field-type="${field.type}">
+                </div>
+              `;
+            } else {
+              // Campo de texto u otro tipo
+              fieldHTML = `
+                <div class="form-group">
+                  <label class="form-label" for="customField_${field.id}">${escapeHtml(field.name)}</label>
+                  <input type="text" class="form-control" id="customField_${field.id}" data-field-id="${field.id}" data-field-type="${field.type}">
+                </div>
+              `;
+            }
+            
+            customFieldsForm.innerHTML += fieldHTML;
+          });
+        })
+        .withFailureHandler(error => {
+          console.error("Error al cargar campos personalizados:", error);
+          customFieldsForm.innerHTML = `<p style="color: var(--danger);">Error al cargar campos personalizados: ${error}</p>`;
+        })
+        .getCustomFieldOptions();
+    }
+    
+    // Función para cargar usuarios para asignación
+    function loadUsersForAssignment() {
+      const assigneeSelect = document.getElementById('newTaskAssignee');
+      
+      google.script.run
+        .withSuccessHandler(users => {
+          // Mantener la opción "Sin asignar"
+          assigneeSelect.innerHTML = '<option value="">Sin asignar</option>';
+          
+          if (users && users.length > 0) {
+            users.forEach(user => {
+              const option = document.createElement('option');
+              option.value = user.id;
+              option.textContent = `${user.name} (${user.email})`;
+              assigneeSelect.appendChild(option);
+            });
+          }
+        })
+        .withFailureHandler(error => {
+          console.error("Error al cargar usuarios:", error);
+        })
+        .getAsanaUsers();
+    }
+    
+    // Función para crear una nueva tarea
+    function createTask() {
+      const taskName = document.getElementById('newTaskName').value.trim();
+      const taskNotes = document.getElementById('newTaskNotes').value.trim();
+      const taskDueDate = document.getElementById('newTaskDueDate').value;
+      const taskAssignee = document.getElementById('newTaskAssignee').value;
+      
+      if (!taskName) {
+        alert('Por favor ingrese un nombre para la tarea');
+        return;
+      }
+      
+      // Recopilar valores de campos personalizados
+      const customFields = {};
+      const customFieldElements = document.querySelectorAll('[data-field-id]');
+      
+      customFieldElements.forEach(element => {
+        const fieldId = element.dataset.fieldId;
+        const fieldType = element.dataset.fieldType;
+        
+        if (fieldType === 'multi_enum') {
+          // Para campos de selección múltiple
+          customFields[fieldId] = Array.from(element.selectedOptions).map(opt => opt.value);
+        } else if (fieldType === 'date' || fieldType === 'date_time') {
+          // Para campos de fecha
+          if (element.value) {
+            // Formato correcto para la API de Asana
+            if (fieldType === 'date') {
+              customFields[fieldId] = { date_value: { date: element.value } };
+            } else {
+              // Para date_time, convertir a ISO8601 en UTC
+              const dateObj = new Date(element.value);
+              const isoString = dateObj.toISOString();
+              customFields[fieldId] = { date_value: { date_time: isoString } };
+            }
+          }
+        } else {
+          // Para otros tipos de campos
+          if (element.value) {
+            customFields[fieldId] = element.value;
+          }
+        }
+      });
+      
+      // Mostrar loader
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('loader').style.display = 'block';
+      
+      // Crear la tarea
+      google.script.run
+        .withSuccessHandler(function(taskId) {
+          // Si hay imágenes o videos, subirlos como adjuntos
+          if (uploadedImages.length > 0 || uploadedVideo) {
+            uploadAttachmentsForTask(taskId, function() {
+              finishTaskCreation(taskId, taskName);
+            });
+          } else {
+            finishTaskCreation(taskId, taskName);
+          }
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+          alert('Error al crear la tarea: ' + error);
+        })
+        .createAsanaTask(taskName, taskNotes, taskDueDate, customFields, taskAssignee);
+    }
+    
+    // Función para finalizar la creación de la tarea
+    function finishTaskCreation(taskId, taskName) {
+      // Cerrar el modal
+      closeCreateTaskModal();
+      
+      // Recargar la lista de tareas
+      loadTasks();
+      
+      // Registrar actividad
+      logActivity('create_task', 'Tarea creada', {taskId: taskId, taskName: taskName});
+      
+      // Ocultar loader
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('loader').style.display = 'none';
+      
+      // Mostrar mensaje de éxito
+      alert('Tarea creada correctamente');
+    }
+    
+    // Función para subir adjuntos para una tarea
+    function uploadAttachmentsForTask(taskId, callback) {
+      let pendingUploads = uploadedImages.length + (uploadedVideo ? 1 : 0);
+      
+      if (pendingUploads === 0) {
+        if (callback) callback();
+        return;
+      }
+      
+      // Subir imágenes
+      uploadedImages.forEach(image => {
+        google.script.run
+          .withSuccessHandler(function() {
+            pendingUploads--;
+            if (pendingUploads === 0 && callback) callback();
+          })
+          .withFailureHandler(function(error) {
+            console.error("Error al subir imagen:", error);
+            pendingUploads--;
+            if (pendingUploads === 0 && callback) callback();
+          })
+          .uploadAsanaAttachment(taskId, image.data, image.name, image.description, 'image');
+      });
+      
+      // Subir video
+      if (uploadedVideo) {
+        // Si es un enlace de YouTube
+        if (uploadedVideo.isLink) {
+          google.script.run
+            .withSuccessHandler(function() {
+              pendingUploads--;
+              if (pendingUploads === 0 && callback) callback();
+            })
+            .withFailureHandler(function(error) {
+              console.error("Error al adjuntar enlace de YouTube:", error);
+              pendingUploads--;
+              if (pendingUploads === 0 && callback) callback();
+            })
+            .attachYouTubeLink(taskId, uploadedVideo.url, uploadedVideo.title || 'Video de YouTube');
+        } else {
+          // Si es un archivo de video para subir a YouTube
+          google.script.run
+            .withSuccessHandler(function() {
+              pendingUploads--;
+              if (pendingUploads === 0 && callback) callback();
+            })
+            .withFailureHandler(function(error) {
+              console.error("Error al subir video a YouTube:", error);
+              pendingUploads--;
+              if (pendingUploads === 0 && callback) callback();
+            })
+            .uploadVideoToYouTube(taskId, uploadedVideo.data, uploadedVideo.title, uploadedVideo.description);
+        }
+      }
+    }
+    
+    // Función para manejar la subida de imágenes
+    function handleImageUpload(event) {
+      const files = event.target.files;
+      const previewContainer = document.getElementById('imagePreviewContainer');
+      
+      // Limitar a 5 imágenes
+      if (uploadedImages.length + files.length > 5) {
+        alert('Solo puede subir un máximo de 5 imágenes por tarea');
+        return;
+      }
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        if (!file.type.startsWith('image/')) {
+          alert(`El archivo "${file.name}" no es una imagen válida`);
+          continue;
+        }
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          const imageId = 'img_' + Date.now() + '_' + i;
+          const imageData = e.target.result;
+          
+          // Guardar la imagen
+          uploadedImages.push({
+            id: imageId,
+            name: file.name,
+            data: imageData,
+            description: ''
+          });
+          
+          // Crear la vista previa
+          const previewItem = document.createElement('div');
+          previewItem.className = 'upload-preview-item';
+          previewItem.dataset.imageId = imageId;
+          
+          previewItem.innerHTML = `
+            <img src="${imageData}" class="upload-preview-image" alt="${escapeHtml(file.name)}">
+            <div class="upload-preview-remove" onclick="removeUploadedImage('${imageId}')">
+              <i class="material-icons">close</i>
+            </div>
+            <div class="upload-preview-info">
+              <input type="text" class="form-control" placeholder="Título" 
+                     onchange="updateImageTitle('${imageId}', this.value)" value="${escapeHtml(file.name)}">
+              <input type="text" class="form-control" placeholder="Descripción" 
+                     onchange="updateImageDescription('${imageId}', this.value)" style="margin-top: 5px;">
+            </div>
+          `;
+          
+          previewContainer.appendChild(previewItem);
+        };
+        
+        reader.readAsDataURL(file);
+      }
+    }
+    
+    // Función para eliminar una imagen subida
+    function removeUploadedImage(imageId) {
+      // Eliminar del array
+      uploadedImages = uploadedImages.filter(img => img.id !== imageId);
+      
+      // Eliminar la vista previa
+      const previewItem = document.querySelector(`.upload-preview-item[data-image-id="${imageId}"]`);
+      if (previewItem) {
+        previewItem.remove();
+      }
+    }
+    
+    // Función para actualizar el título de una imagen
+    function updateImageTitle(imageId, title) {
+      const image = uploadedImages.find(img => img.id === imageId);
+      if (image) {
+        image.name = title;
+      }
+    }
+    
+    // Función para actualizar la descripción de una imagen
+    function updateImageDescription(imageId, description) {
+      const image = uploadedImages.find(img => img.id === imageId);
+      if (image) {
+        image.description = description;
+      }
+    }
+    
+    // Función para manejar la subida de videos
+    function handleVideoUpload(event) {
+      const file = event.target.files[0];
+      const previewContainer = document.getElementById('videoPreviewContainer');
+      
+      if (!file) return;
+      
+      if (!file.type.startsWith('video/')) {
+        alert(`El archivo "${file.name}" no es un video válido`);
+        return;
+      }
+      
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        const videoData = e.target.result;
+        const videoTitle = document.getElementById('videoTitle').value || file.name;
+        const videoDescription = document.getElementById('videoDescription').value || '';
+        
+        // Guardar el video
+        uploadedVideo = {
+          name: file.name,
+          data: videoData,
+          title: videoTitle,
+          description: videoDescription,
+          isLink: false
+        };
+        
+        // Crear la vista previa
+        previewContainer.innerHTML = `
+          <div class="upload-preview-item">
+            <div class="attachment-preview video">
+              <i class="material-icons" style="font-size: 3rem; color: var(--primary);">videocam</i>
+            </div>
+            <div class="upload-preview-info">
+              <div class="upload-preview-title">${escapeHtml(file.name)}</div>
+              <div class="upload-progress">
+                <div class="upload-progress-bar" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      };
+      
+      reader.readAsDataURL(file);
+    }
+    
+    // Función para activar el input de archivo
+    function triggerFileInput(inputId) {
+      document.getElementById(inputId).click();
+    }
+    
+    // Función para cambiar entre pestañas en la creación de tareas
+    function switchCreateTaskTab(tabName) {
+      // Ocultar todas las pestañas
+      document.querySelectorAll('#createTaskModal .tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Desactivar todos los botones de pestaña
+      document.querySelectorAll('#createTaskModal .tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Activar la pestaña seleccionada
+      document.getElementById(`createTask${tabName.charAt(0).toUpperCase() + tabName.slice(1)}Tab`).classList.add('active');
+      
+      // Activar el botón de pestaña
+      const tabs = document.querySelectorAll('#createTaskModal .tab');
+      for (let i = 0; i < tabs.length; i++) {
+        if (tabs[i].textContent.toLowerCase().includes(tabName.toLowerCase())) {
+          tabs[i].classList.add('active');
+          break;
+        }
+      }
+    }
+    
+    // Función para cambiar entre pestañas en los detalles de la tarea
+    function switchTaskTab(tabName) {
+      // Ocultar todas las pestañas
+      document.querySelectorAll('#taskDetails .tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Desactivar todos los botones de pestaña
+      document.querySelectorAll('#taskDetails .tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Activar la pestaña seleccionada
+      document.getElementById(`task${tabName.charAt(0).toUpperCase() + tabName.slice(1)}Tab`).classList.add('active');
+      
+      // Activar el botón de pestaña
+      const tabs = document.querySelectorAll('#taskDetails .tab');
+      for (let i = 0; i < tabs.length; i++) {
+        if (tabs[i].textContent.toLowerCase().includes(tabName.toLowerCase())) {
+          tabs[i].classList.add('active');
+          break;
+        }
+      }
+    }
+    
+    // Función para cambiar entre pestañas en la subida de videos
+    function switchVideoUploadTab(tabName) {
+      // Ocultar todas las pestañas
+      document.getElementById('videoUploadTab').classList.remove('active');
+      document.getElementById('videoLinkTab').classList.remove('active');
+      
+      // Activar la pestaña seleccionada
+      document.getElementById(`video${tabName.charAt(0).toUpperCase() + tabName.slice(1)}Tab`).classList.add('active');
+      
+      // Activar el botón de pestaña
+      const tabs = document.querySelectorAll('#createTaskAttachmentsTab .tabs .tab');
+      for (let i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove('active');
+        if (tabs[i].textContent.toLowerCase().includes(tabName.toLowerCase())) {
+          tabs[i].classList.add('active');
+        }
+      }
+      
+      // Limpiar el video subido si cambiamos de pestaña
+      if (uploadedVideo && ((tabName === 'upload' && uploadedVideo.isLink) || (tabName === 'link' && !uploadedVideo.isLink))) {
+        uploadedVideo = null;
+        document.getElementById('videoPreviewContainer').innerHTML = '';
+      }
+    }
+    
+    // Función para abrir el modal de agregar adjuntos
+    function openAddAttachmentModal() {
+      if (!currentTask || !currentTask.gid) {
+        alert('No hay una tarea seleccionada');
+        return;
+      }
+      
+      // Limpiar el formulario
+      document.getElementById('attachImageUpload').value = '';
+      document.getElementById('attachVideoUpload').value = '';
+      document.getElementById('attachFileUpload').value = '';
+      document.getElementById('attachImageTitle').value = '';
+      document.getElementById('attachVideoTitle').value = '';
+      document.getElementById('attachFileTitle').value = '';
+      document.getElementById('attachImageDescription').value = '';
+      document.getElementById('attachVideoDescription').value = '';
+      document.getElementById('attachFileDescription').value = '';
+      document.getElementById('attachImagePreview').innerHTML = '';
+      document.getElementById('attachVideoPreview').innerHTML = '';
+      document.getElementById('attachFilePreview').innerHTML = '';
+      
+      // Mostrar el modal
+      document.getElementById('addAttachmentModal').style.display = 'block';
+      
+      // Activar la primera pestaña
+      switchAttachmentTab('image');
+    }
+    
+    // Función para cerrar el modal de agregar adjuntos
+    function closeAddAttachmentModal() {
+      document.getElementById('addAttachmentModal').style.display = 'none';
+    }
+    
+    // Función para cambiar entre pestañas en el modal de adjuntos
+    function switchAttachmentTab(tabName) {
+      // Ocultar todas las pestañas
+      document.getElementById('imageAttachmentTab').classList.remove('active');
+      document.getElementById('videoAttachmentTab').classList.remove('active');
+      document.getElementById('fileAttachmentTab').classList.remove('active');
+      
+      // Activar la pestaña seleccionada
+      document.getElementById(`${tabName}AttachmentTab`).classList.add('active');
+      
+      // Activar el botón de pestaña
+      const tabs = document.querySelectorAll('#addAttachmentModal .tabs .tab');
+      for (let i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove('active');
+        if (tabs[i].textContent.toLowerCase().includes(tabName.toLowerCase())) {
+          tabs[i].classList.add('active');
+        }
+      }
+    }
+    
+    // Función para cambiar entre pestañas en el modal de adjuntos de video
+    function switchVideoAttachmentTab(tabName) {
+      // Ocultar todas las pestañas
+      document.getElementById('uploadVideoAttachmentTab').classList.remove('active');
+      document.getElementById('linkVideoAttachmentTab').classList.remove('active');
+      
+      // Activar la pestaña seleccionada
+      document.getElementById(`${tabName}VideoAttachmentTab`).classList.add('active');
+      
+      // Activar el botón de pestaña
+      const tabs = document.querySelectorAll('#videoAttachmentTab .tabs .tab');
+      for (let i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove('active');
+        if (tabs[i].textContent.toLowerCase().includes(tabName.toLowerCase())) {
+          tabs[i].classList.add('active');
+        }
+      }
+    }
+    
+    // Función para previsualizar una imagen adjunta
+    function previewAttachmentImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      if (!file.type.startsWith('image/')) {
+        alert(`El archivo "${file.name}" no es una imagen válida`);
+        return;
+      }
+      
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        const previewContainer = document.getElementById('attachImagePreview');
+        previewContainer.innerHTML = `
+          <div class="upload-preview-item">
+            <img src="${e.target.result}" class="upload-preview-image" alt="${escapeHtml(file.name)}">
+          </div>
+        `;
+        
+        // Establecer el título por defecto
+        document.getElementById('attachImageTitle').value = file.name;
+      };
+      
+      reader.readAsDataURL(file);
+    }
+    
+    // Función para previsualizar un video adjunto
+    function previewAttachmentVideo(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      if (!file.type.startsWith('video/')) {
+        alert(`El archivo "${file.name}" no es un video válido`);
+        return;
+      }
+      
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        const previewContainer = document.getElementById('attachVideoPreview');
+        previewContainer.innerHTML = `
+          <div class="upload-preview-item">
+            <div class="attachment-preview video">
+              <i class="material-icons" style="font-size: 3rem; color: var(--primary);">videocam</i>
+            </div>
+            <div class="upload-preview-info">
+              <div class="upload-preview-title">${escapeHtml(file.name)}</div>
+            </div>
+          </div>
+        `;
+        
+        // Establecer el título por defecto
+        document.getElementById('attachVideoTitle').value = file.name;
+      };
+      
+      reader.readAsDataURL(file);
+    }
+    
+    // Función para previsualizar un archivo adjunto
+    function previewAttachmentFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const previewContainer = document.getElementById('attachFilePreview');
+      previewContainer.innerHTML = `
+        <div class="upload-preview-item">
+          <div class="attachment-preview">
+            <i class="material-icons" style="font-size: 3rem; color: var(--text-secondary);">insert_drive_file</i>
+          </div>
+          <div class="upload-preview-info">
+            <div class="upload-preview-title">${escapeHtml(file.name)}</div>
+            <div class="upload-preview-description">${formatFileSize(file.size)}</div>
+          </div>
+        </div>
+      `;
+      
+      // Establecer el título por defecto
+      document.getElementById('attachFileTitle').value = file.name;
+    }
+    
+    // Función para agregar un adjunto
+    function addAttachment() {
+      if (!currentTask || !currentTask.gid) {
+        alert('No hay una tarea seleccionada');
+        return;
+      }
+      
+      const taskId = currentTask.gid;
+      let activeTab = '';
+      
+      // Determinar qué pestaña está activa
+      if (document.getElementById('imageAttachmentTab').classList.contains('active')) {
+        activeTab = 'image';
+      } else if (document.getElementById('videoAttachmentTab').classList.contains('active')) {
+        activeTab = 'video';
+      } else if (document.getElementById('fileAttachmentTab').classList.contains('active')) {
+        activeTab = 'file';
+      }
+      
+      // Procesar según el tipo de adjunto
+      if (activeTab === 'image') {
+        const fileInput = document.getElementById('attachImageUpload');
+        const title = document.getElementById('attachImageTitle').value;
+        const description = document.getElementById('attachImageDescription').value;
+        
+        if (!fileInput.files || fileInput.files.length === 0) {
+          alert('Por favor seleccione una imagen');
+          return;
+        }
+        
+        const file = fileInput.files[0];
+        
+        // Mostrar loader
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('loader').style.display = 'block';
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          google.script.run
+            .withSuccessHandler(function() {
+              // Cerrar modal
+              closeAddAttachmentModal();
+              
+              // Recargar adjuntos
+              loadTaskAttachments(taskId);
+              
+              // Registrar actividad
+              logActivity('add_attachment', 'Imagen adjuntada', {taskId: taskId, taskName: currentTask.name, attachmentName: title || file.name});
+              
+              // Ocultar loader
+              document.getElementById('overlay').style.display = 'none';
+              document.getElementById('loader').style.display = 'none';
+              
+              // Mostrar mensaje de éxito
+              alert('Imagen adjuntada correctamente');
+            })
+            .withFailureHandler(function(error) {
+              alert('Error al adjuntar imagen: ' + error);
+              document.getElementById('overlay').style.display = 'none';
+              document.getElementById('loader').style.display = 'none';
+            })
+            .uploadAsanaAttachment(taskId, e.target.result, title || file.name, description, 'image');
+        };
+        
+        reader.readAsDataURL(file);
+      } else if (activeTab === 'video') {
+        // Determinar si es subida o enlace
+        if (document.getElementById('uploadVideoAttachmentTab').classList.contains('active')) {
+          const fileInput = document.getElementById('attachVideoUpload');
+          const title = document.getElementById('attachVideoTitle').value;
+          const description = document.getElementById('attachVideoDescription').value;
+          
+          if (!fileInput.files || fileInput.files.length === 0) {
+            alert('Por favor seleccione un video');
+            return;
+          }
+          
+          const file = fileInput.files[0];
+          
+          // Mostrar loader
+          document.getElementById('overlay').style.display = 'block';
+          document.getElementById('loader').style.display = 'block';
+          
+          const reader = new FileReader();
+          
+          reader.onload = function(e) {
+            google.script.run
+              .withSuccessHandler(function() {
+                // Cerrar modal
+                closeAddAttachmentModal();
+                
+                // Recargar adjuntos
+                loadTaskAttachments(taskId);
+                
+                // Registrar actividad
+                logActivity('add_attachment', 'Video adjuntado', {taskId: taskId, taskName: currentTask.name, attachmentName: title || file.name});
+                
+                // Ocultar loader
+                document.getElementById('overlay').style.display = 'none';
+                document.getElementById('loader').style.display = 'none';
+                
+                // Mostrar mensaje de éxito
+                alert('Video subido correctamente a YouTube y adjuntado a la tarea');
+              })
+              .withFailureHandler(function(error) {
+                alert('Error al subir video: ' + error);
+                document.getElementById('overlay').style.display = 'none';
+                document.getElementById('loader').style.display = 'none';
+              })
+              .uploadVideoToYouTube(taskId, e.target.result, title || file.name, description);
+          };
+          
+          reader.readAsDataURL(file);
+        } else {
+          // Enlace de YouTube
+          const videoLink = document.getElementById('attachVideoLink').value;
+          
+          if (!videoLink) {
+            alert('Por favor ingrese un enlace de YouTube');
+            return;
+          }
+          
+          // Validar que sea un enlace de YouTube
+          if (!videoLink.includes('youtube.com/') && !videoLink.includes('youtu.be/')) {
+            alert('Por favor ingrese un enlace válido de YouTube');
+            return;
+          }
+          
+          // Mostrar loader
+          document.getElementById('overlay').style.display = 'block';
+          document.getElementById('loader').style.display = 'block';
+          
+          google.script.run
+            .withSuccessHandler(function() {
+              // Cerrar modal
+              closeAddAttachmentModal();
+              
+              // Recargar adjuntos
+              loadTaskAttachments(taskId);
+              
+              // Registrar actividad
+              logActivity('add_attachment', 'Enlace de YouTube adjuntado', {taskId: taskId, taskName: currentTask.name, attachmentUrl: videoLink});
+              
+              // Ocultar loader
+              document.getElementById('overlay').style.display = 'none';
+              document.getElementById('loader').style.display = 'none';
+              
+              // Mostrar mensaje de éxito
+              alert('Enlace de YouTube adjuntado correctamente');
+            })
+            .withFailureHandler(function(error) {
+              alert('Error al adjuntar enlace de YouTube: ' + error);
+              document.getElementById('overlay').style.display = 'none';
+              document.getElementById('loader').style.display = 'none';
+            })
+            .attachYouTubeLink(taskId, videoLink, 'Video de YouTube');
+        }
+      } else if (activeTab === 'file') {
+        const fileInput = document.getElementById('attachFileUpload');
+        const title = document.getElementById('attachFileTitle').value;
+        const description = document.getElementById('attachFileDescription').value;
+        
+        if (!fileInput.files || fileInput.files.length === 0) {
+          alert('Por favor seleccione un archivo');
+          return;
+        }
+        
+        const file = fileInput.files[0];
+        
+        // Mostrar loader
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('loader').style.display = 'block';
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          google.script.run
+            .withSuccessHandler(function() {
+              // Cerrar modal
+              closeAddAttachmentModal();
+              
+              // Recargar adjuntos
+              loadTaskAttachments(taskId);
+              
+              // Registrar actividad
+              logActivity('add_attachment', 'Archivo adjuntado', {taskId: taskId, taskName: currentTask.name, attachmentName: title || file.name});
+              
+              // Ocultar loader
+              document.getElementById('overlay').style.display = 'none';
+              document.getElementById('loader').style.display = 'none';
+              
+              // Mostrar mensaje de éxito
+              alert('Archivo adjuntado correctamente');
+            })
+            .withFailureHandler(function(error) {
+              alert('Error al adjuntar archivo: ' + error);
+              document.getElementById('overlay').style.display = 'none';
+              document.getElementById('loader').style.display = 'none';
+            })
+            .uploadAsanaAttachment(taskId, e.target.result, title || file.name, description, 'file');
+        };
+        
+        reader.readAsDataURL(file);
+      }
+    }
+    
+    // Función para abrir un adjunto
+    function openAttachment(attachment) {
+      if (attachment.type === 'video' && attachment.url.includes('youtube.com')) {
+        // Abrir video de YouTube en una nueva ventana
+        window.open(attachment.url, '_blank');
+      } else if (attachment.url) {
+        // Abrir otros adjuntos en una nueva ventana
+        window.open(attachment.url, '_blank');
+      }
+    }
+    
+    // Función para abrir el modal de creación de usuarios
+    function openCreateUserModal() {
+      // Limpiar el formulario
+      document.getElementById('newUserName').value = '';
+      document.getElementById('newUserEmail').value = '';
+      document.getElementById('newUserRole').value = '';
+      document.getElementById('newUserPassword').value = '';
+      document.getElementById('newUserPasswordConfirm').value = '';
+      
+      // Mostrar el modal
+      document.getElementById('createUserModal').style.display = 'block';
+    }
+    
+    // Función para cerrar el modal de creación de usuarios
+    function closeCreateUserModal() {
+      document.getElementById('createUserModal').style.display = 'none';
+    }
+    
+    // Función para crear un nuevo usuario
+    function createUser() {
+      const name = document.getElementById('newUserName').value.trim();
+      const email = document.getElementById('newUserEmail').value.trim();
+      const role = document.getElementById('newUserRole').value;
+      const password = document.getElementById('newUserPassword').value;
+      const passwordConfirm = document.getElementById('newUserPasswordConfirm').value;
+      
+      // Validaciones
+      if (!name) {
+        alert('Por favor ingrese el nombre del usuario');
+        return;
+      }
+      
+      if (!email) {
+        alert('Por favor ingrese el email del usuario');
+        return;
+      }
+      
+      if (!role) {
+        alert('Por favor seleccione un rol para el usuario');
+        return;
+      }
+      
+      if (!password) {
+        alert('Por favor ingrese una contraseña');
+        return;
+      }
+      
+      if (password !== passwordConfirm) {
+        alert('Las contraseñas no coinciden');
+        return;
+      }
+      
+      // Mostrar loader
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('loader').style.display = 'block';
+      
+      google.script.run
+        .withSuccessHandler(function() {
+          // Cerrar modal
+          closeCreateUserModal();
+          
+          // Recargar lista de usuarios
+          loadUsers();
+          
+          // Registrar actividad
+          logActivity('create_user', 'Usuario creado', {userName: name, userEmail: email, userRole: role});
+          
+          // Ocultar loader
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+          
+          // Mostrar mensaje de éxito
+          alert('Usuario creado correctamente');
+        })
+        .withFailureHandler(function(error) {
+          alert('Error al crear usuario: ' + error);
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+        })
+        .createUser(name, email, role, password);
+    }
+    
+    // Función para cargar la lista de usuarios
+    function loadUsers() {
+      const usersList = document.getElementById('usersList');
+      usersList.innerHTML = '<p>Cargando usuarios...</p>';
+      
+      google.script.run
+        .withSuccessHandler(users => {
+          if (!users || users.length === 0) {
+            usersList.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">No hay usuarios registrados.</p>';
+            return;
+          }
+          
+          // Crear tabla de usuarios
+          let html = `
+            <table class="permission-table">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Email</th>
+                  <th>Rol</th>
+                  <th>Último acceso</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+          
+          users.forEach(user => {
+            const lastAccess = user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Nunca';
+            
+            let roleBadge = '';
+            switch (user.role) {
+              case 'admin':
+                roleBadge = '<span class="permission-badge admin">Administrador</span>';
+                break;
+              case 'manager':
+                roleBadge = '<span class="permission-badge manager">Gerente</span>';
+                break;
+              case 'editor':
+                roleBadge = '<span class="permission-badge editor">Editor</span>';
+                break;
+              case 'viewer':
+                roleBadge = '<span class="permission-badge viewer">Visualizador</span>';
+                break;
+              default:
+                roleBadge = '<span class="permission-badge viewer">Visualizador</span>';
+            }
+            
+            html += `
+              <tr>
+                <td>${escapeHtml(user.name)}</td>
+                <td>${escapeHtml(user.email)}</td>
+                <td>${roleBadge}</td>
+                <td>${lastAccess}</td>
+                <td>
+                  <button class="btn btn-secondary btn-icon" onclick="editUser('${user.id}')">
+                    <i class="material-icons">edit</i>
+                  </button>
+                  <button class="btn btn-danger btn-icon" onclick="deleteUser('${user.id}', '${escapeHtml(user.name)}')">
+                    <i class="material-icons">delete</i>
+                  </button>
+                </td>
+              </tr>
+            `;
+          });
+          
+          html += `
+              </tbody>
+            </table>
+          `;
+          
+          usersList.innerHTML = html;
+        })
+        .withFailureHandler(error => {
+          console.error("Error al cargar usuarios:", error);
+          usersList.innerHTML = `<p style="color: var(--danger);">Error al cargar usuarios: ${error}</p>`;
+        })
+        .getUsers();
+    }
+    
+    // Función para editar un usuario
+    function editUser(userId) {
+      // Implementar la lógica de edición de usuarios
+      alert('Funcionalidad de edición de usuarios en desarrollo');
+    }
+    
+    // Función para eliminar un usuario
+    function deleteUser(userId, userName) {
+      if (!confirm(`¿Está seguro de que desea eliminar al usuario "${userName}"? Esta acción no se puede deshacer.`)) {
+        return;
+      }
+      
+      // Mostrar loader
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('loader').style.display = 'block';
+      
+      google.script.run
+        .withSuccessHandler(function() {
+          // Recargar lista de usuarios
+          loadUsers();
+          
+          // Registrar actividad
+          logActivity('delete_user', 'Usuario eliminado', {userId: userId, userName: userName});
+          
+          // Ocultar loader
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+          
+          // Mostrar mensaje de éxito
+          alert('Usuario eliminado correctamente');
+        })
+        .withFailureHandler(function(error) {
+          alert('Error al eliminar usuario: ' + error);
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+        })
+        .deleteUser(userId);
+    }
+    
+    // Función para cambiar entre pestañas en la vista de permisos
+    function switchPermissionTab(tabName) {
+      // Ocultar todas las pestañas
+      document.getElementById('rolesTab').classList.remove('active');
+      document.getElementById('fieldsTab').classList.remove('active');
+      
+      // Activar la pestaña seleccionada
+      document.getElementById(`${tabName}Tab`).classList.add('active');
+      
+      // Activar el botón de pestaña
+      const tabs = document.querySelectorAll('#permissionsView .tabs .tab');
+      for (let i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove('active');
+        if (tabs[i].textContent.toLowerCase().includes(tabName.toLowerCase())) {
+          tabs[i].classList.add('active');
+        }
+      }
+      
+      // Cargar datos específicos de la pestaña
+      if (tabName === 'fields') {
+        loadFieldPermissions();
+      }
+    }
+    
+    // Función para cargar los permisos de campos
+    function loadFieldPermissions() {
+      const fieldPermissionsTable = document.getElementById('fieldPermissionsTable');
+      fieldPermissionsTable.innerHTML = '<tr><td colspan="5">Cargando permisos de campos...</td></tr>';
+      
+      google.script.run
+        .withSuccessHandler(fields => {
+          if (!fields || fields.length === 0) {
+            fieldPermissionsTable.innerHTML = '<tr><td colspan="5">No hay campos personalizados disponibles.</td></tr>';
+            return;
+          }
+          
+          fieldPermissionsTable.innerHTML = '';
+          
+          fields.forEach(field => {
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+              <td>${escapeHtml(field.name)}</td>
+              <td>
+                <select class="form-control" onchange="updateFieldPermission('${field.id}', 'admin', this.value)">
+                  <option value="full" selected>Completo</option>
+                  <option value="edit">Edición</option>
+                  <option value="view">Visualización</option>
+                  <option value="none">Sin acceso</option>
+                </select>
+              </td>
+              <td>
+                <select class="form-control" onchange="updateFieldPermission('${field.id}', 'manager', this.value)">
+                  <option value="full">Completo</option>
+                  <option value="edit" selected>Edición</option>
+                  <option value="view">Visualización</option>
+                  <option value="none">Sin acceso</option>
+                </select>
+              </td>
+              <td>
+                <select class="form-control" onchange="updateFieldPermission('${field.id}', 'editor', this.value)">
+                  <option value="full">Completo</option>
+                  <option value="edit">Edición</option>
+                  <option value="view" selected>Visualización</option>
+                  <option value="none">Sin acceso</option>
+                </select>
+              </td>
+              <td>
+                <select class="form-control" onchange="updateFieldPermission('${field.id}', 'viewer', this.value)">
+                  <option value="full">Completo</option>
+                  <option value="edit">Edición</option>
+                  <option value="view" selected>Visualización</option>
+                  <option value="none">Sin acceso</option>
+                </select>
+              </td>
+            `;
+            
+            fieldPermissionsTable.appendChild(row);
+          });
+        })
+        .withFailureHandler(error => {
+          console.error("Error al cargar permisos de campos:", error);
+          fieldPermissionsTable.innerHTML = `<tr><td colspan="5">Error al cargar permisos de campos: ${error}</td></tr>`;
+        })
+        .getCustomFieldOptions();
+    }
+    
+    // Función para actualizar el permiso de un campo
+    function updateFieldPermission(fieldId, role, permission) {
+      // Mostrar loader
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('loader').style.display = 'block';
+      
+      google.script.run
+        .withSuccessHandler(function() {
+          // Registrar actividad
+          logActivity('update_permission', 'Permiso de campo actualizado', {fieldId: fieldId, role: role, permission: permission});
+          
+          // Ocultar loader
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+        })
+        .withFailureHandler(function(error) {
+          alert('Error al actualizar permiso: ' + error);
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+        })
+        .updateFieldPermission(fieldId, role, permission);
+    }
+    
+    // Función para cambiar entre pestañas en la vista de configuración
+    function switchSettingsTab(tabName) {
+      // Ocultar todas las pestañas
+      document.getElementById('generalTab').classList.remove('active');
+      document.getElementById('apiTab').classList.remove('active');
+      document.getElementById('notificationsTab').classList.remove('active');
+      
+      // Activar la pestaña seleccionada
+      document.getElementById(`${tabName}Tab`).classList.add('active');
+      
+      // Activar el botón de pestaña
+      const tabs = document.querySelectorAll('#settingsView .tabs .tab');
+      for (let i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove('active');
+        if (tabs[i].textContent.toLowerCase().includes(tabName.toLowerCase())) {
+          tabs[i].classList.add('active');
+        }
+      }
+    }
+    
+    // Función para guardar la configuración general
+    function saveGeneralSettings() {
+      const orgName = document.getElementById('orgName').value;
+      const timezone = document.getElementById('timezone').value;
+      
+      // Mostrar loader
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('loader').style.display = 'block';
+      
+      google.script.run
+        .withSuccessHandler(function() {
+          // Registrar actividad
+          logActivity('update_settings', 'Configuración general actualizada', {orgName: orgName, timezone: timezone});
+          
+          // Ocultar loader
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+          
+          // Mostrar mensaje de éxito
+          alert('Configuración guardada correctamente');
+        })
+        .withFailureHandler(function(error) {
+          alert('Error al guardar configuración: ' + error);
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+        })
+        .saveGeneralSettings(orgName, timezone);
+    }
+    
+    // Función para guardar la configuración de API
+    function saveApiSettings() {
+      const asanaApiKey = document.getElementById('asanaApiKey').value;
+      const youtubeClientId = document.getElementById('youtubeClientId').value;
+      const youtubeClientSecret = document.getElementById('youtubeClientSecret').value;
+      
+      // Mostrar loader
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('loader').style.display = 'block';
+      
+      google.script.run
+        .withSuccessHandler(function() {
+          // Registrar actividad
+          logActivity('update_settings', 'Configuración de API actualizada', {});
+          
+          // Ocultar loader
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+          
+          // Mostrar mensaje de éxito
+          alert('Configuración de API guardada correctamente');
+        })
+        .withFailureHandler(function(error) {
+          alert('Error al guardar configuración de API: ' + error);
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+        })
+        .saveApiSettings(asanaApiKey, youtubeClientId, youtubeClientSecret);
+    }
+    
+    // Función para guardar la configuración de notificaciones
+    function saveNotificationSettings() {
+      const emailNotifications = document.getElementById('emailNotifications').checked;
+      const summaryFrequency = document.getElementById('summaryFrequency').value;
+      
+      // Mostrar loader
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('loader').style.display = 'block';
+      
+      google.script.run
+        .withSuccessHandler(function() {
+          // Registrar actividad
+          logActivity('update_settings', 'Configuración de notificaciones actualizada', {emailNotifications: emailNotifications, summaryFrequency: summaryFrequency});
+          
+          // Ocultar loader
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+          
+          // Mostrar mensaje de éxito
+          alert('Configuración de notificaciones guardada correctamente');
+        })
+        .withFailureHandler(function(error) {
+          alert('Error al guardar configuración de notificaciones: ' + error);
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+        })
+        .saveNotificationSettings(emailNotifications, summaryFrequency);
+    }
+    
+    // Función para mostrar/ocultar contraseñas
+    function togglePasswordVisibility(inputId) {
+      const input = document.getElementById(inputId);
+      if (input.type === 'password') {
+        input.type = 'text';
+      } else {
+        input.type = 'password';
+      }
+    }
+    
+    // Función para registrar actividad
+    function logActivity(type, description, details) {
+      google.script.run
+        .withFailureHandler(error => {
+          console.error("Error al registrar actividad:", error);
+        })
+        .logActivity(type, description, JSON.stringify(details));
+    }
+    
+    // Función para exportar el registro de actividad
+    function exportActivityLog() {
+      // Mostrar loader
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('loader').style.display = 'block';
+      
+      google.script.run
+        .withSuccessHandler(function(url) {
+          // Ocultar loader
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+          
+          // Abrir el archivo exportado
+          window.open(url, '_blank');
+        })
+        .withFailureHandler(function(error) {
+          alert('Error al exportar registro de actividad: ' + error);
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('loader').style.display = 'none';
+        })
+        .exportActivityLog();
+    }
+    
+    // Función para cambiar entre vistas
+    function showView(viewName) {
+      // Ocultar todas las vistas
+      document.querySelectorAll('.view').forEach(view => {
+        view.style.display = 'none';
+      });
+      
+      // Mostrar la vista seleccionada
+      document.getElementById(`${viewName}View`).style.display = 'block';
+      
+      // Actualizar el menú
+      document.querySelectorAll('.sidebar-menu-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      // Activar el elemento de menú correspondiente
+      const menuItems = document.querySelectorAll('.sidebar-menu-item');
+      for (let i = 0; i < menuItems.length; i++) {
+        if (menuItems[i].textContent.toLowerCase().includes(viewName.toLowerCase())) {
+          menuItems[i].classList.add('active');
+          break;
+        }
+      }
+      
+      // Actualizar la vista actual
+      currentView = viewName;
+      
+      // Cargar datos específicos de la vista
+      if (viewName === 'tasks') {
+        loadTasks();
+      } else if (viewName === 'users') {
+        loadUsers();
+      } else if (viewName === 'activity') {
+        loadActivityLog();
+      }
+    }
+    
+    // Función para cargar el registro de actividad
+    function loadActivityLog() {
+      const activityList = document.getElementById('activityList');
+      activityList.innerHTML = '<p>Cargando registro de actividad...</p>';
+      
+      google.script.run
+        .withSuccessHandler(activities => {
+          if (!activities || activities.length === 0) {
+            activityList.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">No hay registros de actividad.</p>';
+            return;
+          }
+          
+          activityList.innerHTML = '';
+          
+          activities.forEach(activity => {
+            const activityItem = document.createElement('li');
+            activityItem.className = 'activity-item';
+            
+            let iconName = 'info';
+            
+            switch (activity.type) {
+              case 'login':
+                iconName = 'login';
+                break;
+              case 'create_task':
+                iconName = 'add_circle';
+                break;
+              case 'update_task':
+                iconName = 'edit';
+                break;
+              case 'complete_task':
+                iconName = 'check_circle';
+                break;
+              case 'delete_task':
+                iconName = 'delete';
+                break;
+              case 'add_attachment':
+                iconName = 'attach_file';
+                break;
+              case 'create_user':
+                iconName = 'person_add';
+                break;
+              case 'delete_user':
+                iconName = 'person_remove';
+                break;
+              case 'update_settings':
+                iconName = 'settings';
+                break;
+              case 'update_permission':
+                iconName = 'security';
+                break;
+            }
+            
+            const date = new Date(activity.timestamp).toLocaleString();
+            
+            activityItem.innerHTML = `
+              <div class="activity-icon">
+                <i class="material-icons">${iconName}</i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">${escapeHtml(activity.description)}</div>
+                <div class="activity-meta">
+                  <span>${escapeHtml(activity.user)}</span>
+                  <span>${date}</span>
+                </div>
+              </div>
+            `;
+            
+            activityList.appendChild(activityItem);
+          });
+        })
+        .withFailureHandler(error => {
+          console.error("Error al cargar registro de actividad:", error);
+          activityList.innerHTML = `<p style="color: var(--danger);">Error al cargar registro de actividad: ${error}</p>`;
+        })
+        .getActivityLog();
+    }
+    
+    // Función para actualizar las tareas
+    function refreshTasks() {
+      loadTasks();
+    }
+    
+    // Función para filtrar tareas
+    function filterTasks() {
+      const searchText = document.getElementById('searchTasks').value.toLowerCase();
+      const taskCards = document.querySelectorAll('.task-card');
+      
+      taskCards.forEach(card => {
+        const taskTitle = card.querySelector('.task-card-title').textContent.toLowerCase();
+        const taskContent = card.querySelector('.task-card-content').textContent.toLowerCase();
+        
+        if (taskTitle.includes(searchText) || taskContent.includes(searchText)) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+    
+    // Función para obtener las iniciales de un nombre
+    function getInitials(firstName, lastName) {
+      return (firstName ? firstName.charAt(0) : '') + (lastName ? lastName.charAt(0) : '');
+    }
+    
+    // Función para formatear el tamaño de un archivo
+    function formatFileSize(bytes) {
+      if (bytes < 1024) {
+        return bytes + ' bytes';
+      } else if (bytes < 1024 * 1024) {
+        return (bytes / 1024).toFixed(1) + ' KB';
+      } else if (bytes < 1024 * 1024 * 1024) {
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+      } else {
+        return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+      }
+    }
+    
+    // Función para escapar HTML y prevenir XSS
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+    
+    // Cargar tareas al iniciar
+    document.addEventListener('DOMContentLoaded', function() {
+      loadTasks();
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const userInfo = <?= JSON.stringify(userInfo) ?> || { name: 'Invitado', role: 'viewer' };
+
+      // Mostrar información del usuario
+      document.querySelector('.header h1').textContent = `Bienvenido, ${userInfo.name}!`;
+      document.querySelector('.header p').textContent = `Rol: ${userInfo.role}`;
+
+      // Mostrar contenido principal si el usuario tiene sesión activa
+      if (userInfo.role !== 'viewer') {
+        document.getElementById('mainContent').style.display = 'block';
+        document.getElementById('loginPanel').style.display = 'none';
+      } else {
+        document.getElementById('mainContent').style.display = 'none';
+        document.getElementById('loginPanel').style.display = 'flex';
+      }
+    });
+  </script>
+</body>
+</html>
